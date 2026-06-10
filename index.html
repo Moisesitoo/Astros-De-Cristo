@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Astros de Cristo</title>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;background:#f4f6fb;color:#111;}
+.app{max-width:900px;margin:0 auto;padding:.75rem;}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0d2147;border-radius:12px;margin-bottom:1rem;}
+.hdr-t{color:#fff;flex:1;}.hdr-t h1{font-size:16px;font-weight:600;}.hdr-t p{font-size:12px;color:#aab4cc;}
+.logo{width:50px;height:50px;border-radius:50%;background:#c0392b;border:2px solid #e67e22;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* DASHBOARD */
+.dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1rem;}
+.dash-btn{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:20px 14px;text-align:center;cursor:pointer;transition:all .15s;}
+.dash-btn:hover{border-color:#e67e22;background:#fff8f0;}
+.dash-btn .icon{font-size:28px;margin-bottom:8px;}
+.dash-btn .title{font-size:13px;font-weight:600;color:#0d2147;}
+.dash-btn .sub{font-size:11px;color:#888;margin-top:3px;}
+
+/* NAV */
+.tabs{display:flex;gap:2px;margin-bottom:1rem;border-bottom:1px solid #e0e0e0;overflow-x:auto;}
+.tab{padding:8px 14px;font-size:13px;background:none;border:none;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
+.tab.on{color:#0d2147;border-bottom-color:#e67e22;font-weight:600;}
+
+/* PAGES */
+.pg{display:none;}.pg.on{display:block;}
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;}
+.lbl{font-size:11px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+.fld{display:flex;flex-direction:column;gap:4px;}
+.fld label{font-size:12px;color:#555;}
+.fld input,.fld select{font-size:13px;padding:7px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;}
+.fld input:focus,.fld select:focus{outline:none;border-color:#e67e22;}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;border:none;transition:background .15s;}
+.b-or{background:#e67e22;color:#fff;}.b-or:hover{background:#d35400;}
+.b-nv{background:#0d2147;color:#fff;}.b-nv:hover{background:#0a1a36;}
+.b-gh{background:#fff;border:1px solid #ddd;color:#555;}.b-gh:hover{background:#f5f5f5;}
+.b-sm{padding:5px 11px;font-size:12px;}
+.b-rd{background:#fff;border:1px solid #f5a5a5;color:#c0392b;}
+.b-gr{background:#27ae60;color:#fff;}.b-gr:hover{background:#1e8449;}
+
+/* BADGES */
+.pbg{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;background:#E6F1FB;color:#0C447C;font-weight:600;}
+.badge-w{background:#E1F5EE;color:#085041;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;}
+.badge-l{background:#FCEBEB;color:#791F1F;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;}
+.badge-k{background:#FAEEDA;color:#633806;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;}
+
+/* SCOREBOARD */
+.sb-wrap{overflow-x:auto;}
+.sb{border-collapse:collapse;width:100%;min-width:400px;}
+.sb th{background:#0d2147;color:#fff;font-size:11px;font-weight:600;padding:7px 10px;text-align:center;}
+.sb th:first-child{text-align:left;}
+.sb td{padding:5px 7px;border:1px solid #e8e8e8;text-align:center;font-size:13px;}
+.sb td:first-child{text-align:left;font-weight:600;font-size:12px;padding-left:10px;}
+.ar td{background:#fef3e8;}
+.tc{font-weight:700;background:#f5f5f5!important;}
+.sbi{width:38px;text-align:center;border:none;background:none;font-size:13px;color:#111;}
+.sbi:focus{outline:none;background:#fff8f0;border-radius:4px;}
+
+/* PLANILLA */
+.pls{overflow-x:auto;}
+.plt{border-collapse:collapse;font-size:12px;}
+.plt th{background:#0d2147;color:#fff;font-size:11px;padding:6px 8px;text-align:center;white-space:nowrap;}
+.plt th.nc{text-align:left;min-width:115px;}
+.plt td{border:1px solid #e8e8e8;padding:3px;vertical-align:middle;}
+.plt td.nc{padding:5px 8px;font-size:12px;font-weight:600;white-space:nowrap;}
+.plt td.pc{padding:4px 6px;text-align:center;}
+.snm{font-size:10px;color:#aaa;font-weight:400;display:block;}
+
+/* CUADRANTE */
+.qd{width:48px;height:48px;border:1px solid #e0e0e0;border-radius:4px;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin:1px;background:#fff;}
+.qd:hover{border-color:#999;}
+.qd.hit{background:#E1F5EE;border-color:#5DCAA5;color:#085041;}
+.qd.out{background:#FCEBEB;border-color:#F09595;color:#791F1F;}
+.qd.wlk{background:#E6F1FB;border-color:#85B7EB;color:#0C447C;}
+.qd.spc{background:#FAEEDA;border-color:#EF9F27;color:#633806;}
+.qd.nxt{border-style:dashed;border-color:#e67e22;}
+.qd.em{border-style:dashed;border-color:#e8e8e8;background:none;cursor:default;}
+.qd .ri{position:absolute;top:2px;right:3px;font-size:9px;color:#854F0B;font-weight:700;}
+.qd .ob{position:absolute;top:2px;left:3px;font-size:9px;color:#A32D2D;font-weight:700;}
+.qd .hm{position:absolute;bottom:2px;left:3px;font-size:10px;}
+.qd .nd{position:absolute;bottom:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#e67e22;}
+
+/* KO ALERT */
+.ko-al{background:#FCEBEB;border:1px solid #F09595;border-radius:8px;padding:10px 14px;color:#791F1F;font-size:13px;margin-bottom:1rem;display:none;font-weight:600;}
+.ko-al.on{display:block;}
+
+/* MODAL */
+.mwo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:1rem;}
+.mwo.on{display:flex;}
+.mdi{background:#fff;border-radius:12px;padding:1.25rem;width:340px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18);}
+.mdi h3{font-size:15px;font-weight:700;margin-bottom:12px;color:#0d2147;}
+.pg2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+.pb2{padding:9px 6px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;text-align:center;border:1px solid #ddd;background:#fff;transition:background .1s;}
+.pb2:hover{background:#f5f5f5;}
+.pb2.ph{border-color:#5DCAA5;background:#E1F5EE;color:#085041;}
+.pb2.po{border-color:#F09595;background:#FCEBEB;color:#791F1F;}
+.pb2.pw{border-color:#85B7EB;background:#E6F1FB;color:#0C447C;}
+.pb2.ps{border-color:#EF9F27;background:#FAEEDA;color:#633806;}
+.ex{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap;}
+.ck{display:flex;align-items:center;gap:5px;font-size:13px;color:#555;cursor:pointer;}
+.mft{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px;}
+
+/* TABLES */
+.lt{width:100%;border-collapse:collapse;font-size:13px;}
+.lt th{font-size:11px;font-weight:600;color:#888;padding:6px 8px;border-bottom:1px solid #e8e8e8;background:#fafafa;}
+.lt td{padding:7px 8px;border-bottom:1px solid #f0f0f0;}
+.lt tr:last-child td{border-bottom:none;}
+.lt tr:hover td{background:#fafafa;}
+
+/* STATS CARDS */
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;margin-bottom:1rem;}
+.sc{background:#f8f8f8;border-radius:10px;padding:12px;}
+.sc .sl{font-size:11px;color:#888;margin-bottom:4px;font-weight:600;}
+.sc .sv{font-size:22px;font-weight:700;color:#0d2147;}
+
+/* PITCHER FORM */
+.pt-h{display:grid;grid-template-columns:1fr 80px 55px 55px 55px 70px auto;gap:8px;font-size:11px;font-weight:600;color:#888;padding:5px 0 7px;border-bottom:1px solid #e8e8e8;}
+.pt-r{display:grid;grid-template-columns:1fr 80px 55px 55px 55px 70px auto;gap:8px;align-items:center;font-size:13px;padding:7px 0;border-bottom:1px solid #f0f0f0;}
+
+/* HISTORIAL */
+.gc{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:13px 15px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;}
+.gc:hover{border-color:#e67e22;}
+.gs{font-size:20px;font-weight:700;min-width:75px;text-align:center;color:#0d2147;}
+.gi{flex:1;}.gi .gv{font-size:13px;font-weight:700;}.gi .gm{font-size:11px;color:#888;margin-top:2px;}
+
+/* SYNC STATUS */
+.sync{font-size:11px;padding:3px 8px;border-radius:6px;margin-left:auto;}
+.sync.ok{background:#E1F5EE;color:#085041;}
+.sync.err{background:#FCEBEB;color:#791F1F;}
+.sync.wait{background:#FAEEDA;color:#633806;}
+
+/* LOADING */
+.loading{text-align:center;padding:2rem;color:#888;font-size:13px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">
+    <svg viewBox="0 0 40 40" fill="none" width="42" height="42">
+      <circle cx="20" cy="20" r="19" fill="#c0392b" stroke="#e67e22" stroke-width="1.5"/>
+      <polygon points="20,6 23,16 34,16 25,22 28,33 20,27 12,33 15,22 6,16 17,16" fill="#0d2147" stroke="#e67e22" stroke-width=".5"/>
+      <text x="20" y="25" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="serif">AC</text>
+    </svg>
+  </div>
+  <div class="hdr-t"><h1>Astros de Cristo</h1><p id="hsub">Bienvenido</p></div>
+  <span class="sync wait" id="sync-lbl">Conectando...</span>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab on" onclick="SP('dash')">🏠 Inicio</button>
+  <button class="tab" onclick="SP('game')">📋 Planilla</button>
+  <button class="tab" onclick="SP('pitching')">⚾ Pitcheo</button>
+  <button class="tab" onclick="SP('stats')">📊 Estadísticas</button>
+  <button class="tab" onclick="SP('history')">🗂 Historial</button>
+  <button class="tab" onclick="SP('setup')">⚙️ Roster</button>
+</div>
+
+<!-- DASHBOARD -->
+<div class="pg on" id="page-dash">
+  <div style="margin-bottom:1rem;">
+    <div style="font-size:15px;font-weight:700;color:#0d2147;margin-bottom:4px;">¿Qué quieres hacer?</div>
+    <p style="font-size:12px;color:#888;">Selecciona una opción para comenzar</p>
+  </div>
+  <div class="dash">
+    <div class="dash-btn" onclick="showNewGameModal()">
+      <div class="icon">⚾</div>
+      <div class="title">Nuevo Juego</div>
+      <div class="sub">Iniciar planilla</div>
+    </div>
+    <div class="dash-btn" onclick="showStatsMenu()">
+      <div class="icon">📊</div>
+      <div class="title">Estadísticas</div>
+      <div class="sub">Bateo y pitcheo</div>
+    </div>
+    <div class="dash-btn" onclick="SP('history')">
+      <div class="icon">🗂</div>
+      <div class="title">Historial</div>
+      <div class="sub">Juegos anteriores</div>
+    </div>
+    <div class="dash-btn" onclick="SP('setup')">
+      <div class="icon">👥</div>
+      <div class="title">Roster</div>
+      <div class="sub">Gestionar jugadores</div>
+    </div>
+  </div>
+  <div id="dash-recent"></div>
+</div>
+
+<!-- STATS MENU MODAL -->
+<div class="mwo" id="mw-stats" onclick="closeMW('mw-stats',event)">
+  <div class="mdi" onclick="event.stopPropagation()">
+    <h3>📊 Estadísticas</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:14px;">¿Qué estadísticas quieres ver?</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+      <button class="btn b-nv" onclick="closeMW('mw-stats');SP('stats');document.getElementById('sf').value='batting';renderStats();" style="padding:14px;font-size:14px;">🏏 Estadísticas de Bateo</button>
+      <button class="btn b-or" onclick="closeMW('mw-stats');SP('stats');document.getElementById('sf').value='pitching';renderStats();" style="padding:14px;font-size:14px;">⚾ Estadísticas de Pitcheo</button>
+    </div>
+    <div class="mft"><button class="btn b-gh b-sm" onclick="closeMW('mw-stats')">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- NEW GAME MODAL -->
+<div class="mwo" id="mw-ng" onclick="closeMW('mw-ng',event)">
+  <div class="mdi" onclick="event.stopPropagation()">
+    <h3>⚾ Nuevo Juego</h3>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px;">
+      <div class="fld"><label>Astros juegan como</label>
+        <select id="ng-role"><option value="local">Local</option><option value="visitante">Visitante</option></select></div>
+      <div class="fld"><label>Nombre del rival</label>
+        <input type="text" id="ng-rival" placeholder="Ej. Leones"></div>
+      <div class="fld"><label>Reglas de Knockout</label>
+        <select id="ng-ko" onchange="updKODesc()">
+          <option value="new">Nuevas — 12 / 7</option>
+          <option value="old">Viejas — 15 / 10</option>
+        </select></div>
+      <p style="font-size:12px;color:#888;" id="ng-ko-desc"></p>
+    </div>
+    <div class="mft">
+      <button class="btn b-gh b-sm" onclick="closeMW('mw-ng')">Cancelar</button>
+      <button class="btn b-or" onclick="startGame()">Iniciar juego ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROSTER / SETUP -->
+<div class="pg" id="page-setup">
+  <div class="card">
+    <div class="lbl">Roster del equipo</div>
+    <div class="row" style="margin-bottom:14px;">
+      <input type="text" id="r-name" placeholder="Nombre del jugador" style="font-size:13px;flex:1;min-width:130px;padding:7px 10px;border:1px solid #ddd;border-radius:8px;">
+      <select id="r-pos" style="font-size:13px;padding:7px 10px;border:1px solid #ddd;border-radius:8px;width:85px;">
+        <option>P</option><option>C</option><option>1B</option><option>2B</option>
+        <option>3B</option><option>SS</option><option>LF</option><option>CF</option><option>RF</option><option>DC</option>
+      </select>
+      <button class="btn b-nv b-sm" onclick="addP()">+ Agregar</button>
+    </div>
+    <div id="rl"><div class="loading">Cargando roster...</div></div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="pg" id="page-game">
+  <div id="ko-al" class="ko-al"></div>
+  <div class="card" style="padding:.85rem 1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="lbl" style="margin:0;">Marcador por inning</div>
+      <span id="game-info" style="font-size:11px;color:#888;"></span>
+    </div>
+    <div class="sb-wrap"><table class="sb" id="sb"></table></div>
+  </div>
+  <div class="card" style="padding:.85rem 1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div class="lbl" style="margin:0;">Planilla de bateo</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn b-gh b-sm" onclick="chI(-1)">‹</button>
+        <span style="font-size:13px;font-weight:700;color:#0d2147;">Inning <span id="ci">1</span></span>
+        <button class="btn b-gh b-sm" onclick="chI(1)">›</button>
+      </div>
+    </div>
+    <div class="pls"><table class="plt" id="plt"></table></div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:1rem;">
+    <button class="btn b-gh b-sm" onclick="SP('pitching')">Registrar pitcheo ⚾</button>
+    <button class="btn b-gr b-sm" onclick="finishGame()">Cerrar juego ✓</button>
+  </div>
+</div>
+
+<!-- PITCHING -->
+<div class="pg" id="page-pitching">
+  <div class="card">
+    <div class="lbl">Registro de pitcheo por juego</div>
+    <div class="row" style="margin-bottom:1rem;flex-wrap:wrap;">
+      <div class="fld" style="flex:1;min-width:130px;"><label>Pitcher</label>
+        <select id="ps" style="font-size:13px;padding:7px 10px;border:1px solid #ddd;border-radius:8px;"></select></div>
+      <div class="fld" style="width:100px;"><label>Rival</label>
+        <input type="text" id="pg-g" style="font-size:13px;padding:7px 10px;border:1px solid #ddd;border-radius:8px;" placeholder="Rival"></div>
+      <div class="fld" style="width:65px;"><label>Innings</label>
+        <input type="number" id="pi" value="1" min="0" max="6" step=".1" style="font-size:13px;padding:7px 8px;border:1px solid #ddd;border-radius:8px;"></div>
+      <div class="fld" style="width:60px;"><label>K</label>
+        <input type="number" id="pk" value="0" min="0" style="font-size:13px;padding:7px 8px;border:1px solid #ddd;border-radius:8px;"></div>
+      <div class="fld" style="width:60px;"><label>CL</label>
+        <input type="number" id="pe" value="0" min="0" style="font-size:13px;padding:7px 8px;border:1px solid #ddd;border-radius:8px;"></div>
+      <div class="fld" style="width:80px;"><label>¿Ganador?</label>
+        <select id="pw" style="font-size:13px;padding:7px 8px;border:1px solid #ddd;border-radius:8px;">
+          <option value="no">No</option><option value="si">Sí ✓</option>
+        </select></div>
+      <button class="btn b-nv b-sm" onclick="savePit()" style="align-self:flex-end;">Guardar</button>
+    </div>
+    <div id="pl"><div class="loading">Cargando...</div></div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="pg" id="page-stats">
+  <div class="card">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+      <select id="sf" onchange="renderStats()" style="font-size:13px;padding:7px 10px;border:1px solid #ddd;border-radius:8px;">
+        <option value="batting">📊 Estadísticas de Bateo</option>
+        <option value="pitching">⚾ Estadísticas de Pitcheo</option>
+      </select>
+      <select id="sf-player" onchange="renderStats()" style="font-size:13px;padding:7px 10px;border:1px solid #ddd;border-radius:8px;">
+        <option value="ALL">Todos los jugadores</option>
+      </select>
+    </div>
+    <div id="sc2"><div class="loading">Cargando estadísticas...</div></div>
+  </div>
+</div>
+
+<!-- HISTORIAL -->
+<div class="pg" id="page-history">
+  <div class="card">
+    <div class="lbl">Historial de juegos</div>
+    <div id="hist"><div class="loading">Cargando juegos...</div></div>
+  </div>
+</div>
+
+</div><!-- end .app -->
+
+<!-- MODAL AB -->
+<div class="mwo" id="mw1" onclick="closeMW('mw1',event)">
+  <div class="mdi" onclick="event.stopPropagation()">
+    <h3 id="abt">Turno al bate</h3>
+    <div id="mn">
+      <div class="pg2">
+        <button class="pb2 ph" onclick="sP('1B')">1B — Sencillo</button>
+        <button class="pb2 ph" onclick="sP('2B')">2B — Doble</button>
+        <button class="pb2 ph" onclick="sP('3B')">3B — Triple</button>
+        <button class="pb2 ph" onclick="sP('HR')">HR — Jonrón</button>
+        <button class="pb2 po" onclick="sP('FO')">Out en fly</button>
+        <button class="pb2 po" onclick="sP('GO')">Out en rolling</button>
+        <button class="pb2 po" onclick="sP('K')">Ponche (K)</button>
+        <button class="pb2 pw" onclick="sP('BB')">Base por bolas</button>
+        <button class="pb2 ps" onclick="sP('E')">Error del campo</button>
+        <button class="pb2 po" onclick="sP('DP')">Doble play</button>
+        <button class="pb2 ps" onclick="sP('SAC')">Sacrificio</button>
+      </div>
+      <div class="ex">
+        <label class="ck"><input type="checkbox" id="msc"> 🏠 Anotó carrera</label>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span style="font-size:12px;color:#666;">RBI:</span>
+          <input type="number" id="mrb" value="0" min="0" max="10" style="width:52px;font-size:13px;padding:4px 7px;border:1px solid #ddd;border-radius:6px;">
+        </div>
+      </div>
+      <div class="mft">
+        <button class="btn b-rd b-sm" onclick="delAB()">Borrar turno</button>
+        <button class="btn b-gh b-sm" onclick="closeMW('mw1')">Cancelar</button>
+      </div>
+    </div>
+    <div id="mh" style="display:none;">
+      <div style="background:#f8f8f8;border-radius:8px;padding:10px 12px;margin-bottom:12px;">
+        <span style="font-size:12px;color:#666;">Jugada registrada: </span><strong id="hl" style="font-size:14px;color:#0d2147;"></strong>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+        <label class="ck" style="font-size:13px;"><input type="checkbox" id="mob"> <span>Out en base <span style="font-size:11px;color:#aaa;">(aparece esquina sup. izq.)</span></span></label>
+        <label class="ck" style="font-size:13px;"><input type="checkbox" id="msch"> 🏠 Anotó carrera</label>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <span style="font-size:13px;color:#555;">RBI en este turno:</span>
+        <input type="number" id="mrbh" value="0" min="0" max="10" style="width:55px;font-size:13px;padding:4px 7px;border:1px solid #ddd;border-radius:6px;">
+      </div>
+      <div class="mft">
+        <button class="btn b-rd b-sm" onclick="delAB()">Borrar turno</button>
+        <button class="btn b-gh b-sm" onclick="closeMW('mw1')">Cancelar</button>
+        <button class="btn b-nv b-sm" onclick="saveHit()">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUB -->
+<div class="mwo" id="mw2" onclick="closeMW('mw2',event)">
+  <div class="mdi" onclick="event.stopPropagation()">
+    <h3>↔ Cambio de jugador</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:14px;">El sustituto ocupa el mismo lugar en el orden de bateo. Sus estadísticas serán completamente independientes.</p>
+    <div class="fld" style="margin-bottom:12px;"><label>Jugador que entra al juego</label>
+      <select id="ss" style="font-size:13px;padding:7px 10px;border:1px solid #ddd;border-radius:8px;"></select></div>
+    <div class="fld" style="margin-bottom:16px;"><label>Su posición en el campo</label>
+      <select id="sp2" style="font-size:13px;padding:7px 10px;border:1px solid #ddd;border-radius:8px;">
+        <option>P</option><option>C</option><option>1B</option><option>2B</option>
+        <option>3B</option><option>SS</option><option>LF</option><option>CF</option><option>RF</option><option>DC</option>
+      </select></div>
+    <div class="mft">
+      <button class="btn b-gh b-sm" onclick="closeMW('mw2')">Cancelar</button>
+      <button class="btn b-nv" onclick="confSub()">Confirmar cambio</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FINISH GAME -->
+<div class="mwo" id="mw-fin" onclick="closeMW('mw-fin',event)">
+  <div class="mdi" onclick="event.stopPropagation()">
+    <h3>✓ Cerrar juego</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:14px;">El juego quedará guardado en el historial.</p>
+    <div style="background:#f8f8f8;border-radius:8px;padding:12px;margin-bottom:14px;text-align:center;">
+      <div id="fin-score" style="font-size:24px;font-weight:700;color:#0d2147;"></div>
+      <div id="fin-info" style="font-size:12px;color:#888;margin-top:4px;"></div>
+    </div>
+    <div class="mft">
+      <button class="btn b-gh b-sm" onclick="closeMW('mw-fin')">Cancelar</button>
+      <button class="btn b-gr" onclick="confirmFinish()">Guardar y cerrar ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// FIREBASE CONFIG — REEMPLAZA CON TU CONFIGURACIÓN
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyD8FFXyes7YWdHFHpksOrLlAAZL6dNTZ64",
+  authDomain: "astros-de-cristo.firebaseapp.com",
+  projectId: "astros-de-cristo",
+  storageBucket: "astros-de-cristo.firebasestorage.app",
+  messagingSenderId: "851842987779",
+  appId: "1:851842987779:web:7ec878344f0f5c266adb36",
+  measurementId: "G-JYFKRKJELS"
+};
+// ============================================================
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Estado global
+let players = [];
+let games = [];
+let pitching = [];
+let CG = null; // Current game
+let CI = 1;    // Current inning
+let MT = null; // Modal target (at-bat)
+let ST = null; // Sub target
+
+// Referencias Firestore
+const playersRef = db.collection('players');
+const gamesRef   = db.collection('games');
+const pitchingRef = db.collection('pitching');
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  try {
+    // Load players
+    const pSnap = await playersRef.orderBy('order').get();
+    players = pSnap.docs.map(d => ({id: d.id, ...d.data()}));
+
+    // Load games
+    const gSnap = await gamesRef.orderBy('date', 'desc').get();
+    games = gSnap.docs.map(d => ({id: d.id, ...d.data()}));
+
+    // Load pitching
+    const pitSnap = await pitchingRef.get();
+    pitching = pitSnap.docs.map(d => ({id: d.id, ...d.data()}));
+
+    document.getElementById('sync-lbl').textContent = '✓ Conectado';
+    document.getElementById('sync-lbl').className = 'sync ok';
+
+    rRoster();
+    rfSF();
+    renderDash();
+  } catch(e) {
+    document.getElementById('sync-lbl').textContent = '⚠ Sin conexión';
+    document.getElementById('sync-lbl').className = 'sync err';
+    console.error(e);
+  }
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function SP(p) {
+  document.querySelectorAll('.pg').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  document.getElementById('page-' + p).classList.add('on');
+  const ti = {dash:0, game:1, pitching:2, stats:3, history:4, setup:5};
+  document.querySelectorAll('.tab')[ti[p]]?.classList.add('on');
+  if (p === 'game') rG();
+  if (p === 'stats') { rfSF(); renderStats(); }
+  if (p === 'pitching') rPitPage();
+  if (p === 'history') rHist();
+  if (p === 'dash') renderDash();
+}
+
+function showStatsMenu() {
+  document.getElementById('mw-stats').classList.add('on');
+}
+
+function showNewGameModal() {
+  updKODesc();
+  document.getElementById('mw-ng').classList.add('on');
+}
+
+function closeMW(id, e) {
+  if (!e || e.target === document.getElementById(id))
+    document.getElementById(id).classList.remove('on');
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDash() {
+  const el = document.getElementById('dash-recent');
+  const recent = games.slice(0, 3);
+  if (!recent.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="lbl" style="margin-top:.5rem;">Últimos juegos</div>` +
+    recent.map(g => {
+      const {a, r} = gSc(g);
+      const win = a > r;
+      const res = win ? `<span class="badge-w">W</span>` : `<span class="badge-l">L</span>`;
+      return `<div class="gc" onclick="loadGame('${g.id}')">
+        <div class="gs">${a} – ${r}</div>
+        <div class="gi"><div class="gv">vs ${g.rival}</div><div class="gm">${g.date} · ${g.role === 'local' ? 'Local' : 'Visitante'}</div></div>
+        ${res}
+      </div>`;
+    }).join('');
+}
+
+// ============================================================
+// ROSTER
+// ============================================================
+async function addP() {
+  const n = document.getElementById('r-name').value.trim();
+  const pos = document.getElementById('r-pos').value;
+  if (!n) return;
+  const order = players.length;
+  const ref = await playersRef.add({ name: n, pos, order });
+  players.push({ id: ref.id, name: n, pos, order });
+  rRoster();
+  document.getElementById('r-name').value = '';
+}
+
+async function remP(id) {
+  if (!confirm('¿Eliminar este jugador?')) return;
+  await playersRef.doc(id).delete();
+  players = players.filter(p => p.id !== id);
+  rRoster();
+}
+
+function rRoster() {
+  const el = document.getElementById('rl');
+  if (!players.length) { el.innerHTML = '<p style="font-size:13px;color:#888;text-align:center;padding:1rem;">Sin jugadores. Agrega uno arriba.</p>'; return; }
+  el.innerHTML = `<table class="lt"><thead><tr><th>#</th><th>Nombre</th><th>Posición</th><th></th></tr></thead><tbody>` +
+    players.map((p, i) => `<tr>
+      <td style="color:#888;text-align:center;font-weight:600;">${i+1}</td>
+      <td style="font-weight:600;">${p.name}</td>
+      <td><span class="pbg">${p.pos}</span></td>
+      <td><button class="btn b-rd b-sm" onclick="remP('${p.id}')" style="padding:3px 9px;">×</button></td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+// ============================================================
+// KO DESC
+// ============================================================
+function updKODesc() {
+  const v = document.getElementById('ng-ko').value;
+  document.getElementById('ng-ko-desc').textContent = v === 'new'
+    ? 'Super KO inning 3 con 12 carr. de ventaja · KO desde inning 4 con 7 carr.'
+    : 'Super KO inning 3 con 15 carr. de ventaja · KO desde inning 4 con 10 carr.';
+}
+
+// ============================================================
+// START / LOAD GAME
+// ============================================================
+async function startGame() {
+  const role = document.getElementById('ng-role').value;
+  const rival = document.getElementById('ng-rival').value.trim() || 'Rival';
+  const ko = document.getElementById('ng-ko').value;
+  if (!players.length) { alert('Agrega jugadores al roster primero.'); return; }
+
+  const lineup = players.map(p => ([{ pid: p.id, name: p.name, pos: p.pos }]));
+  const gameData = {
+    role, rival, ko,
+    date: new Date().toLocaleDateString('es-DO'),
+    ts: Date.now(),
+    innings: Array(6).fill(null).map(() => ({ astros: null, rival: null })),
+    lineup,
+    plays: {},
+    finished: false
+  };
+
+  const ref = await gamesRef.add(gameData);
+  CG = { id: ref.id, ...gameData };
+  games.unshift(CG);
+  CI = 1;
+
+  document.getElementById('hsub').textContent = `Astros (${role === 'local' ? 'Local' : 'Visitante'}) vs ${rival} · ${gameData.date}`;
+  document.getElementById('game-info').textContent = `KO ${ko === 'new' ? 'nuevas' : 'viejas'}`;
+  closeMW('mw-ng');
+  SP('game');
+}
+
+function loadGame(id) {
+  const g = games.find(x => x.id === id);
+  if (!g) return;
+  if (!g.lineup) g.lineup = players.map(p => ([{ pid: p.id, name: p.name, pos: p.pos }]));
+  CG = g; CI = 1;
+  document.getElementById('hsub').textContent = `Astros (${g.role === 'local' ? 'Local' : 'Visitante'}) vs ${g.rival} · ${g.date}`;
+  document.getElementById('game-info').textContent = `KO ${g.ko === 'new' ? 'nuevas' : 'viejas'}`;
+  SP('game');
+}
+
+async function saveGame() {
+  if (!CG) return;
+  try {
+    await gamesRef.doc(CG.id).set(CG);
+    document.getElementById('sync-lbl').textContent = '✓ Guardado';
+    document.getElementById('sync-lbl').className = 'sync ok';
+  } catch(e) {
+    document.getElementById('sync-lbl').textContent = '⚠ Error guardando';
+    document.getElementById('sync-lbl').className = 'sync err';
+  }
+}
+
+function finishGame() {
+  if (!CG) return;
+  const { a, r } = gSc(CG);
+  document.getElementById('fin-score').textContent = `Astros ${a} – ${r} ${CG.rival}`;
+  document.getElementById('fin-info').textContent = `${CG.date} · ${CG.role === 'local' ? 'Local' : 'Visitante'}`;
+  document.getElementById('mw-fin').classList.add('on');
+}
+
+async function confirmFinish() {
+  if (!CG) return;
+  CG.finished = true;
+  await saveGame();
+  closeMW('mw-fin');
+  SP('history');
+}
+
+// ============================================================
+// SCOREBOARD
+// ============================================================
+function rG() {
+  if (!CG) { document.getElementById('plt').innerHTML = ''; document.getElementById('sb').innerHTML = ''; return; }
+  rSB(); rPlanilla(); chkKO();
+}
+
+function rSB() {
+  const g = CG, vA = g.role === 'visitante', lA = g.role === 'local';
+  const vN = vA ? 'Astros' : g.rival, lN = lA ? 'Astros' : g.rival;
+  let h = `<thead><tr><th style="text-align:left;min-width:95px;">Equipo</th>`;
+  for (let i = 1; i <= 6; i++) h += `<th>${i}</th>`;
+  h += `<th>R</th></tr></thead><tbody>`;
+  // Visitante row
+  h += `<tr${vA ? ' class="ar"' : ''}><td>${vN}</td>`;
+  let vT = 0;
+  for (let i = 0; i < 6; i++) {
+    const v = vA ? g.innings[i].astros : g.innings[i].rival;
+    if (v !== null && v !== '') vT += parseInt(v) || 0;
+    h += `<td><input class="sbi" type="number" min="0" value="${v !== null && v !== '' ? v : ''}" placeholder="—" onchange="uI('v',${i},this.value)"${vA ? ' style="background:#fef3e8;"' : ''}></td>`;
+  }
+  h += `<td class="tc">${vT}</td></tr>`;
+  // Local row
+  h += `<tr${lA ? ' class="ar"' : ''}><td>${lN}</td>`;
+  let lT = 0;
+  for (let i = 0; i < 6; i++) {
+    const v = lA ? g.innings[i].astros : g.innings[i].rival;
+    if (v !== null && v !== '') lT += parseInt(v) || 0;
+    h += `<td><input class="sbi" type="number" min="0" value="${v !== null && v !== '' ? v : ''}" placeholder="—" onchange="uI('l',${i},this.value)"${lA ? ' style="background:#fef3e8;"' : ''}></td>`;
+  }
+  h += `<td class="tc">${lT}</td></tr></tbody>`;
+  document.getElementById('sb').innerHTML = h;
+}
+
+function uI(t, i, v) {
+  if (!CG) return;
+  const n = v === '' ? null : parseInt(v) || 0;
+  const vA = CG.role === 'visitante';
+  if (t === 'v') vA ? CG.innings[i].astros = n : CG.innings[i].rival = n;
+  else           vA ? CG.innings[i].rival = n : CG.innings[i].astros = n;
+  saveGame(); rSB(); chkKO();
+}
+
+function chkKO() {
+  if (!CG) return;
+  let a = 0, r = 0;
+  CG.innings.forEach(x => { if (x.astros !== null) a += parseInt(x.astros) || 0; if (x.rival !== null) r += parseInt(x.rival) || 0; });
+  const d = Math.abs(a - r), ld = a > r ? 'Astros' : CG.rival;
+  const pl = CG.innings.filter(x => x.astros !== null || x.rival !== null).length;
+  const sk = CG.ko === 'new' ? 12 : 15, rk = CG.ko === 'new' ? 7 : 10;
+  const el = document.getElementById('ko-al');
+  if (pl === 3 && d >= sk) { el.textContent = `⚡ Super Knockout — ${ld} lidera por ${d} carreras en el inning 3`; el.classList.add('on'); }
+  else if (pl >= 4 && d >= rk) { el.textContent = `⚡ Knockout — ${ld} lidera por ${d} carreras`; el.classList.add('on'); }
+  else el.classList.remove('on');
+}
+
+// ============================================================
+// PLANILLA
+// ============================================================
+const LB = {'1B':'1B','2B':'2B','3B':'3B','HR':'HR','FO':'FO','GO':'GO','K':'K','BB':'BB','E':'E','DP':'DP','SAC':'SAC'};
+const CS = {'1B':'hit','2B':'hit','3B':'hit','HR':'hit','FO':'out','GO':'out','K':'out','BB':'wlk','E':'spc','DP':'out','SAC':'spc'};
+const isH = t => ['1B','2B','3B','HR'].includes(t);
+
+function rPlanilla() {
+  document.getElementById('ci').textContent = CI;
+  const t = document.getElementById('plt');
+  if (!CG) { t.innerHTML = ''; return; }
+  const lu = CG.lineup;
+  const mpi = [];
+  for (let inn = 1; inn <= 6; inn++) {
+    let m = 1;
+    lu.forEach(slot => slot.forEach(pl => { const n = (CG.plays[pl.pid] || []).filter(ab => ab.inning === inn).length; if (n + 1 > m) m = n + 1; }));
+    mpi[inn] = m;
+  }
+  let h = `<thead><tr><th class="nc">Nombre</th><th class="pc">Pos</th>`;
+  for (let inn = 1; inn <= 6; inn++)
+    h += `<th colspan="${mpi[inn]}" style="border-left:1px solid rgba(255,255,255,.3);${inn === CI ? 'background:#1a3a6e;' : ''}">Inn ${inn}</th>`;
+  h += `</tr></thead>`;
+
+  // Next batter
+  let lTs = -1, lSi = -1;
+  lu.forEach((slot, si) => slot.forEach(pl => { const ps = CG.plays[pl.pid] || []; if (ps.length > 0) { const l = ps[ps.length-1]; if ((l.ts||0) > lTs) { lTs = l.ts||0; lSi = si; } } }));
+  const nSi = lSi >= 0 ? (lSi + 1) % lu.length : 0;
+
+  let b = '<tbody>';
+  lu.forEach((slot, si) => {
+    slot.forEach((pl, pi) => {
+      const isAP = pi === slot.length - 1, isNx = si === nSi && isAP;
+      b += `<tr>`;
+      if (pi === 0) {
+        b += `<td class="nc">${pl.name}${slot.length > 1 ? `<span class="snm">→ ${slot.slice(1).map(p=>p.name).join(', ')}</span>` : ''}${isAP ? `<button class="btn b-gh b-sm" onclick="openSub(${si})" style="padding:1px 7px;font-size:10px;margin-left:5px;">↔</button>` : ''}</td>`;
+      } else {
+        b += `<td class="nc"><span style="font-size:10px;color:#aaa;">↳ </span>${pl.name}${isAP ? `<button class="btn b-gh b-sm" onclick="openSub(${si})" style="padding:1px 7px;font-size:10px;margin-left:5px;">↔</button>` : ''}</td>`;
+      }
+      b += `<td class="pc"><span class="pbg">${pl.pos}</span></td>`;
+      for (let inn = 1; inn <= 6; inn++) {
+        const pit = (CG.plays[pl.pid] || []).map((ab, ri) => ({...ab, ri})).filter(ab => ab.inning === inn);
+        const cols = mpi[inn], aI = inn === CI, bl0 = 'border-left:1px solid #e8e8e8;';
+        for (let ci = 0; ci < cols - 1; ci++) {
+          const ab = pit[ci], bl = ci === 0 ? bl0 : '';
+          if (ab) {
+            b += `<td style="${bl}padding:2px;"><div class="qd ${CS[ab.type]||''}" onclick="oAB('${pl.pid}',${ab.ri},${inn})">
+              ${ab.outBase ? `<span class="ob">out</span>` : ''}${ab.rbi ? `<span class="ri">${ab.rbi}</span>` : ''}${ab.scored ? `<span class="hm">🏠</span>` : ''}${LB[ab.type]||''}
+            </div></td>`;
+          } else { b += `<td style="${bl}padding:2px;"><div class="qd em"></div></td>`; }
+        }
+        const bl = cols === 1 ? bl0 : '';
+        if (aI && isAP) {
+          b += `<td style="${bl}padding:2px;"><div class="qd nxt" onclick="oNAB('${pl.pid}',${si})">${isNx ? `<span class="nd"></span>` : ''}<span style="font-size:14px;color:#aaa;">+</span></div></td>`;
+        } else { b += `<td style="${bl}padding:2px;"><div class="qd em"></div></td>`; }
+      }
+      b += `</tr>`;
+    });
+  });
+  b += `</tbody>`;
+  t.innerHTML = h + b;
+}
+
+function oNAB(pid, si) {
+  MT = { pid, rawIdx: null, inning: CI, si };
+  const pl = CG.lineup[si][CG.lineup[si].length - 1];
+  document.getElementById('abt').textContent = `Nuevo turno — ${pl.name} · Inn ${CI}`;
+  document.getElementById('mn').style.display = 'block';
+  document.getElementById('mh').style.display = 'none';
+  document.getElementById('msc').checked = false;
+  document.getElementById('mrb').value = 0;
+  document.getElementById('mw1').classList.add('on');
+}
+
+function oAB(pid, ri, inn) {
+  if (!CG) return;
+  const ab = (CG.plays[pid] || [])[ri];
+  if (!ab) return;
+  MT = { pid, rawIdx: ri, inning: inn };
+  let pn = ''; CG.lineup.forEach(slot => slot.forEach(p => { if (p.pid === pid) pn = p.name; }));
+  document.getElementById('abt').textContent = `Editar — ${pn} · Inn ${inn}`;
+  if (isH(ab.type)) {
+    document.getElementById('mn').style.display = 'none'; document.getElementById('mh').style.display = 'block';
+    document.getElementById('hl').textContent = LB[ab.type];
+    document.getElementById('mob').checked = ab.outBase || false;
+    document.getElementById('msch').checked = ab.scored || false;
+    document.getElementById('mrbh').value = ab.rbi || 0;
+  } else {
+    document.getElementById('mn').style.display = 'block'; document.getElementById('mh').style.display = 'none';
+    document.getElementById('msc').checked = ab.scored || false;
+    document.getElementById('mrb').value = ab.rbi || 0;
+  }
+  document.getElementById('mw1').classList.add('on');
+}
+
+function sP(type) {
+  if (!CG || !MT) return;
+  const { pid, rawIdx, inning } = MT;
+  const sc = document.getElementById('msc').checked, rb = parseInt(document.getElementById('mrb').value) || 0;
+  const ab = { type, inning, scored: sc, rbi: rb > 0 ? rb : null, outBase: false, ts: Date.now() };
+  if (!CG.plays[pid]) CG.plays[pid] = [];
+  if (rawIdx !== null && rawIdx >= 0) CG.plays[pid][rawIdx] = ab; else CG.plays[pid].push(ab);
+  saveGame(); closeMW('mw1'); rPlanilla();
+}
+
+function saveHit() {
+  if (!CG || !MT) return;
+  const { pid, rawIdx } = MT; if (rawIdx === null || rawIdx < 0) return;
+  const ab = CG.plays[pid][rawIdx];
+  ab.outBase = document.getElementById('mob').checked;
+  ab.scored = document.getElementById('msch').checked;
+  const rb = parseInt(document.getElementById('mrbh').value) || 0; ab.rbi = rb > 0 ? rb : null; ab.ts = Date.now();
+  saveGame(); closeMW('mw1'); rPlanilla();
+}
+
+function delAB() {
+  if (!CG || !MT) return;
+  const { pid, rawIdx } = MT;
+  if (rawIdx !== null && rawIdx >= 0) { CG.plays[pid].splice(rawIdx, 1); saveGame(); }
+  closeMW('mw1'); rPlanilla();
+}
+
+function openSub(si) {
+  ST = { si };
+  const aP = new Set(CG.lineup.map(slot => slot[slot.length-1].pid));
+  const opts = players.filter(p => !aP.has(p.id));
+  const sel = document.getElementById('ss');
+  sel.innerHTML = opts.length ? opts.map(p => `<option value="${p.id}">${p.name} (${p.pos})</option>`).join('') : '<option value="">Sin jugadores disponibles en el roster</option>';
+  document.getElementById('mw2').classList.add('on');
+}
+
+async function confSub() {
+  if (!ST || !CG) return;
+  const { si } = ST;
+  const pid = document.getElementById('ss').value, pos = document.getElementById('sp2').value;
+  if (!pid) { alert('Selecciona un jugador.'); return; }
+  const pl = players.find(p => p.id === pid); if (!pl) return;
+  CG.lineup[si].push({ pid: pl.id, name: pl.name, pos });
+  if (!CG.plays[pl.id]) CG.plays[pl.id] = [];
+  await saveGame(); closeMW('mw2'); rPlanilla();
+}
+
+function chI(d) { CI = Math.max(1, Math.min(6, CI + d)); rPlanilla(); }
+
+// ============================================================
+// PITCHING
+// ============================================================
+function rPitPage() {
+  const pitchers = players.filter(p => p.pos === 'P');
+  const sel = document.getElementById('ps');
+  sel.innerHTML = (pitchers.length ? pitchers : players).map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  rPitList();
+}
+
+function rPitList() {
+  const el = document.getElementById('pl');
+  if (!pitching.length) { el.innerHTML = '<p style="font-size:13px;color:#888;text-align:center;padding:1rem;">Sin registros de pitcheo.</p>'; return; }
+  el.innerHTML = `<div class="pt-h"><span>Pitcher</span><span>Rival</span><span>Inn</span><span>K</span><span>CL</span><span>Ganador</span><span></span></div>` +
+    [...pitching].reverse().map(r => {
+      const p = players.find(x => x.id === r.pid);
+      return `<div class="pt-r">
+        <span style="font-weight:600;">${p ? p.name : 'N/A'}</span>
+        <span style="font-size:12px;color:#888;">${r.game}</span>
+        <span>${r.inn.toFixed(1)}</span>
+        <span>${r.k}</span>
+        <span>${r.er}</span>
+        <span>${r.winner ? '⭐ Sí' : '—'}</span>
+        <button class="btn b-rd b-sm" onclick="dPit('${r.id}')" style="padding:3px 9px;">×</button>
+      </div>`;
+    }).join('');
+}
+
+async function savePit() {
+  const pid = document.getElementById('ps').value;
+  const game = document.getElementById('pg-g').value.trim() || 'Rival';
+  const inn = parseFloat(document.getElementById('pi').value) || 0;
+  const k = parseInt(document.getElementById('pk').value) || 0;
+  const er = parseInt(document.getElementById('pe').value) || 0;
+  const winner = document.getElementById('pw').value === 'si';
+  if (!pid) return;
+  const data = { pid, game, inn, k, er, winner, ts: Date.now() };
+  const ref = await pitchingRef.add(data);
+  pitching.push({ id: ref.id, ...data });
+  rPitList();
+  // Reset winner select
+  document.getElementById('pw').value = 'no';
+}
+
+async function dPit(id) {
+  await pitchingRef.doc(id).delete();
+  pitching = pitching.filter(x => x.id !== id);
+  rPitList();
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function rfSF() {
+  const sel = document.getElementById('sf-player');
+  sel.innerHTML = '<option value="ALL">Todos los jugadores</option>' +
+    players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+}
+
+function apo(pid) {
+  let arr = [];
+  games.forEach(g => { if (g.plays && g.plays[pid]) arr = arr.concat(g.plays[pid]); });
+  return arr;
+}
+
+function cSt(plays) {
+  const ab = plays.filter(p => !['BB','SAC'].includes(p.type)).length;
+  const hits = plays.filter(p => isH(p.type)).length;
+  const bb = plays.filter(p => p.type === 'BB').length;
+  const hr = plays.filter(p => p.type === 'HR').length;
+  const rbi = plays.reduce((a, b) => a + (b.rbi || 0), 0);
+  const r = plays.filter(p => p.scored).length;
+  const tb = plays.filter(p => p.type === '1B').length + plays.filter(p => p.type === '2B').length*2 + plays.filter(p => p.type === '3B').length*3 + hr*4;
+  const k = plays.filter(p => p.type === 'K').length;
+  const avg = ab > 0 ? hits/ab : 0;
+  const obp = (ab+bb) > 0 ? (hits+bb)/(ab+bb) : 0;
+  const slg = ab > 0 ? tb/ab : 0;
+  return { ab, hits, bb, hr, rbi, r, k, tb, avg, obp, slg, ops: obp+slg };
+}
+
+function renderStats() {
+  const type = document.getElementById('sf').value;
+  const playerFilter = document.getElementById('sf-player').value;
+  const el = document.getElementById('sc2');
+
+  if (type === 'batting') {
+    const filteredPlayers = playerFilter === 'ALL' ? players : players.filter(p => p.id === playerFilter);
+    if (playerFilter !== 'ALL' && filteredPlayers.length === 1) {
+      const p = filteredPlayers[0];
+      const plays = apo(p.id);
+      if (!plays.length) { el.innerHTML = '<p style="font-size:13px;color:#888;">Sin jugadas para este jugador.</p>'; return; }
+      const s = cSt(plays);
+      el.innerHTML = `<h3 style="font-size:14px;font-weight:700;color:#0d2147;margin-bottom:12px;">${p.name}</h3>
+        <div class="sg">
+          <div class="sc"><div class="sl">AVG</div><div class="sv">${s.avg.toFixed(3)}</div></div>
+          <div class="sc"><div class="sl">OBP</div><div class="sv">${s.obp.toFixed(3)}</div></div>
+          <div class="sc"><div class="sl">OPS</div><div class="sv">${s.ops.toFixed(3)}</div></div>
+          <div class="sc"><div class="sl">RBI</div><div class="sv">${s.rbi}</div></div>
+          <div class="sc"><div class="sl">R</div><div class="sv">${s.r}</div></div>
+          <div class="sc"><div class="sl">HR</div><div class="sv">${s.hr}</div></div>
+          <div class="sc"><div class="sl">H</div><div class="sv">${s.hits}</div></div>
+          <div class="sc"><div class="sl">K</div><div class="sv">${s.k}</div></div>
+          <div class="sc"><div class="sl">BB</div><div class="sv">${s.bb}</div></div>
+          <div class="sc"><div class="sl">AB</div><div class="sv">${s.ab}</div></div>
+        </div>`;
+    } else {
+      const rows = filteredPlayers.map(p => { const plays = apo(p.id); if (!plays.length) return null; return { name: p.name, ...cSt(plays) }; }).filter(Boolean);
+      if (!rows.length) { el.innerHTML = '<p style="font-size:13px;color:#888;">Sin jugadas registradas.</p>'; return; }
+      el.innerHTML = `<div style="overflow-x:auto;"><table class="lt" style="min-width:520px;">
+        <thead><tr><th>Jugador</th><th>AB</th><th>H</th><th>R</th><th>RBI</th><th>BB</th><th>HR</th><th>K</th><th>AVG</th><th>OBP</th><th>OPS</th></tr></thead>
+        <tbody>${rows.map(r => `<tr><td style="font-weight:600;">${r.name}</td><td>${r.ab}</td><td>${r.hits}</td><td>${r.r}</td><td>${r.rbi}</td><td>${r.bb}</td><td>${r.hr}</td><td>${r.k}</td><td><strong>${r.avg.toFixed(3)}</strong></td><td>${r.obp.toFixed(3)}</td><td>${r.ops.toFixed(3)}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+    }
+  } else {
+    // Pitching stats
+    const filteredPitchers = playerFilter === 'ALL' ? players : players.filter(p => p.id === playerFilter);
+    const rows = filteredPitchers.map(p => {
+      const logs = pitching.filter(x => x.pid === p.id);
+      if (!logs.length) return null;
+      const inn = logs.reduce((a, b) => a + b.inn, 0);
+      const k = logs.reduce((a, b) => a + b.k, 0);
+      const er = logs.reduce((a, b) => a + b.er, 0);
+      const wins = logs.filter(x => x.winner).length;
+      const era = inn > 0 ? (er * 6) / inn : 0;
+      return { name: p.name, inn, k, er, wins, era };
+    }).filter(Boolean);
+    if (!rows.length) { el.innerHTML = '<p style="font-size:13px;color:#888;">Sin datos de pitcheo.</p>'; return; }
+    el.innerHTML = `<div style="overflow-x:auto;"><table class="lt" style="min-width:420px;">
+      <thead><tr><th>Pitcher</th><th>Inn</th><th>K</th><th>CL</th><th>Victorias</th><th>ERA</th></tr></thead>
+      <tbody>${rows.map(r => `<tr><td style="font-weight:600;">${r.name}</td><td>${r.inn.toFixed(1)}</td><td>${r.k}</td><td>${r.er}</td><td>${r.wins > 0 ? `⭐ ${r.wins}` : '0'}</td><td><strong>${r.era.toFixed(2)}</strong></td></tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+}
+
+// ============================================================
+// HISTORIAL
+// ============================================================
+function gSc(g) {
+  let a = 0, r = 0;
+  g.innings.forEach(x => { if (x.astros !== null) a += parseInt(x.astros) || 0; if (x.rival !== null) r += parseInt(x.rival) || 0; });
+  return { a, r };
+}
+
+function rHist() {
+  const el = document.getElementById('hist');
+  if (!games.length) { el.innerHTML = '<p style="font-size:13px;color:#888;text-align:center;padding:2rem;">Sin juegos registrados.</p>'; return; }
+  el.innerHTML = games.map(g => {
+    const { a, r } = gSc(g);
+    const win = a > r;
+    const d = Math.abs(a - r);
+    const pl = g.innings.filter(x => x.astros !== null || x.rival !== null).length;
+    const sk = g.ko === 'new' ? 12 : 15, rk = g.ko === 'new' ? 7 : 10;
+    const ko = (pl === 3 && d >= sk) || (pl >= 4 && d >= rk);
+    const res = ko ? `<span class="badge-k">KO</span>` : win ? `<span class="badge-w">W</span>` : `<span class="badge-l">L</span>`;
+    return `<div class="gc" onclick="loadGame('${g.id}')">
+      <div class="gs">${a} – ${r}</div>
+      <div class="gi">
+        <div class="gv">vs ${g.rival}</div>
+        <div class="gm">${g.date} · ${g.role === 'local' ? 'Local' : 'Visitante'} · KO ${g.ko === 'new' ? 'nuevas' : 'viejas'}${g.finished ? ' · ✓ Cerrado' : ' · En progreso'}</div>
+      </div>
+      ${res}
+      <button class="btn b-rd b-sm" onclick="event.stopPropagation();dGame('${g.id}')" style="padding:3px 9px;">×</button>
+    </div>`;
+  }).join('');
+}
+
+async function dGame(id) {
+  if (!confirm('¿Borrar este juego permanentemente?')) return;
+  await gamesRef.doc(id).delete();
+  games = games.filter(x => x.id !== id);
+  if (CG && CG.id === id) { CG = null; document.getElementById('hsub').textContent = 'Sin juego activo'; }
+  rHist();
+}
+
+// ============================================================
+// START
+// ============================================================
+updKODesc();
+init();
+</script>
+</body>
+</html>
